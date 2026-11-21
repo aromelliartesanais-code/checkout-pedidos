@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101828">
+<title>Conferência de pedidos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+:root{--bg:#eef1f4;--sf:#fff;--ink:#101828;--mu:#5b6676;--ln:#d5dae1;--gr:#12a150;--grb:#e3f6ea;--gri:#0b6b36;--wn:#b54708;--wnb:#fdf0e1;--off:#c9d0d9;--offi:#6b7585;color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root{--bg:#0f141b;--sf:#18202b;--ink:#eef2f7;--mu:#9aa6b6;--ln:#2a3544;--gr:#2fc774;--grb:#12301f;--gri:#8fe3b4;--wn:#f2a65a;--wnb:#33240f;--off:#2a3544;--offi:#7d8a9b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 Barlow,system-ui,sans-serif;max-width:520px;margin-inline:auto;padding:calc(12px + env(safe-area-inset-top,0px)) 14px 120px}
+h1{font:700 26px/1.1 "Barlow Condensed",Barlow,sans-serif;margin:4px 0 12px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.top span{color:var(--mu);font-size:14px}
+.link{background:none;border:0;color:var(--mu);font:500 14px Barlow,sans-serif;text-decoration:underline;padding:6px}
+.tabs{display:flex;gap:8px;margin:8px 0 12px}
+.tab{flex:1;padding:11px;border-radius:10px;border:1px solid var(--ln);background:var(--sf);color:var(--ink);font:500 15px Barlow,sans-serif}
+.tab.on{background:var(--ink);color:var(--bg)}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:14px;margin-bottom:12px}
+label{font-weight:500;color:var(--mu);font-size:14px}
+input[type=text],input[type=email],input[type=password],input[type=file]{width:100%;font:inherit;font-size:17px;padding:13px;border-radius:10px;border:1px solid var(--ln);background:var(--bg);color:var(--ink);margin:6px 0 10px}
+.err{background:var(--wnb);color:var(--wn);border-radius:10px;padding:11px;margin-top:10px;font-weight:500}
+.err:empty{display:none}
+.hint{color:var(--mu);font-size:13px;margin:6px 0 0}
+.btn{width:100%;padding:14px;border:0;border-radius:10px;background:var(--ink);color:var(--bg);font:600 17px Barlow,sans-serif;margin-top:6px}
+.buyer{font:700 24px/1.1 "Barlow Condensed",Barlow,sans-serif}
+.meta{color:var(--mu);font-size:14px;margin-top:4px}
+.count{margin:0 0 10px;font-weight:500;color:var(--mu)}
+.item{display:flex;gap:12px;align-items:flex-start}
+.item.done{border-color:var(--gr);background:var(--grb)}
+.ph{flex:0 0 84px;width:84px;height:84px;border-radius:10px;object-fit:cover;display:flex;align-items:center;justify-content:center;text-align:center;font:700 15px/1.1 "Barlow Condensed",sans-serif;color:#fff;background:#5b6676;padding:4px;word-break:break-all}
+.vt{font:700 22px/1.1 "Barlow Condensed",sans-serif}
+.name{font-size:14px;color:var(--mu);margin-top:2px}
+.what{font-weight:500;margin-top:6px}
+.total{font:700 34px/1 "Barlow Condensed",sans-serif;margin-top:2px}
+.total small{font:500 14px Barlow,sans-serif;color:var(--mu);margin-left:4px}
+.ok{width:100%;margin-top:10px;padding:14px;border:0;border-radius:10px;background:var(--gr);color:#fff;font:600 17px Barlow,sans-serif}
+.done .ok{background:transparent;color:var(--gri);border:2px solid var(--gr)}
+.bar{position:fixed;left:0;right:0;bottom:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--ln)}
+.next{display:block;width:100%;max-width:492px;margin:0 auto;padding:16px;border:0;border-radius:12px;font:600 18px Barlow,sans-serif;background:var(--ink);color:var(--bg)}
+.next:disabled{background:var(--off);color:var(--offi)}
+#cam{position:fixed;inset:0;background:#000;z-index:9;display:flex;flex-direction:column}
+#cam video{flex:1;width:100%;object-fit:cover}
+#cam .btn{border-radius:0;margin:0;background:#fff;color:#000}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gr);outline-offset:2px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<section id="login" hidden>
+  <h1>Conferência de pedidos</h1>
+  <div class="card">
+    <label for="em">E-mail</label><input id="em" type="email" autocomplete="username">
+    <label for="sn">Senha</label><input id="sn" type="password" autocomplete="current-password">
+    <div id="msgLogin" class="err"></div>
+    <button class="btn" id="entrar">Entrar</button>
+  </div>
+</section>
+
+<section id="app" hidden>
+  <div class="top"><h1>Conferência</h1><div><span id="quem"></span> <button class="link" id="sair">Sair</button></div></div>
+  <div class="tabs" id="tabs" hidden>
+    <button class="tab on" data-a="conf">Conferir</button>
+    <button class="tab" data-a="imp">Importar notas</button>
+  </div>
+
+  <div id="conf">
+    <section id="scan" class="card">
+      <label for="code">Bipe qualquer código da etiqueta (barras ou QR) ou digite</label>
+      <input id="code" type="text" inputmode="text" autocomplete="off" placeholder="Código da etiqueta, pedido ou nº da nota">
+      <button class="btn" id="btnCam">Ler com a câmera</button>
+      <div id="msg"></div>
+      <p class="hint">Com leitor Bluetooth, é só bipar: o campo acima já fica pronto.</p>
+    </section>
+    <section id="order" hidden></section>
+    <div class="bar"><button class="next" id="next" disabled>Ler próxima etiqueta</button></div>
+  </div>
+
+  <div id="imp" hidden>
+    <div class="card">
+      <label for="arq">Arquivos ZIP ou XML das notas</label>
+      <input id="arq" type="file" accept=".zip,.xml" multiple>
+      <button class="btn" id="btnImp">Importar</button>
+      <div id="impMsg" class="hint"></div>
+      <p class="hint">Notas já importadas são reconhecidas pela chave e não duplicam.</p>
+    </div>
+  </div>
+</section>
+
+<div id="cam" hidden><video id="video" playsinline muted></video><button class="btn" id="fechaCam">Cancelar</button></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+var SB=supabase.createClient("https://fydxqdzdrjmwbmxzkfjb.supabase.co","sb_publishable_KUa0dGTf8VL-oSP6gGEDpw_SZg69VKs");
+var $=function(i){return document.getElementById(i)},user=null,papel=null,atual=null,stream=null,rodando=false,tentados=new Set();
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function erro(el,t){$(el).innerHTML='<div class="err">'+esc(t)+'</div>'}
+
+/* ---------- Entrada ---------- */
+async function iniciar(){
+  var s=(await SB.auth.getSession()).data.session;
+  if(!s){$("login").hidden=false;$("app").hidden=true;return}
+  user=s.user;
+  var r=await SB.from("perfis").select("papel").eq("user_id",user.id).maybeSingle();
+  if(!r.data){$("msgLogin").textContent="Este usuário não tem permissão de acesso. Fale com o administrador.";await SB.auth.signOut();$("login").hidden=false;$("app").hidden=true;return}
+  papel=r.data.papel;$("login").hidden=true;$("app").hidden=false;
+  $("quem").textContent=papel==="admin"?"Administrador":"Conferente";
+  $("tabs").hidden=papel!=="admin";aba("conf");$("code").focus();
+}
+$("entrar").onclick=async function(){
+  $("msgLogin").textContent="";
+  var r=await SB.auth.signInWithPassword({email:$("em").value.trim(),password:$("sn").value});
+  if(r.error){var m=r.error.message||"";$("msgLogin").textContent=/invalid login/i.test(m)?"E-mail ou senha incorretos.":/not confirmed/i.test(m)?"E-mail ainda não confirmado no Supabase.":"Erro ao entrar: "+m;return}
+  iniciar();
+};
+$("sair").onclick=async function(){await SB.auth.signOut();location.reload()};
+function aba(a){
+  $("conf").hidden=a!=="conf";$("imp").hidden=a!=="imp";
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.dataset.a===a)});
+}
+$("tabs").onclick=function(e){if(e.target.dataset.a)aba(e.target.dataset.a)};
+
+/* ---------- Importação de notas (administrador) ---------- */
+async function lerArquivos(files){
+  var xmls=[];
+  for(var i=0;i<files.length;i++){
+    var f=files[i];
+    if(/\.zip$/i.test(f.name)){
+      var z=await JSZip.loadAsync(f);
+      for(var n in z.files){if(/\.xml$/i.test(n)&&!z.files[n].dir)xmls.push(await z.files[n].async("string"))}
+    }else if(/\.xml$/i.test(f.name)){xmls.push(await f.text())}
+  }
+  return xmls;
+}
+function folhas(e){return Array.prototype.map.call(e.getElementsByTagName("*"),function(x){return x.children.length?"":x.textContent}).join(" ")}
+function codigosDe(inf,chave,ped){
+  var c=new Set([chave]);
+  var add=function(s){String(s||"").toUpperCase().split(/[^A-Z0-9]+/).forEach(function(t){if(t.length>=8&&/\d/.test(t))c.add(t)})};
+  add(ped);
+  ["infCpl","infAdFisco","transp"].forEach(function(t){var e=inf.getElementsByTagNameNS("*",t)[0];if(e)add(folhas(e))});
+  return Array.from(c);
+}
+function parseNota(txt){
+  var d=new DOMParser().parseFromString(txt,"application/xml");
+  var tag=function(p,t){var e=p?p.getElementsByTagNameNS("*",t)[0]:null;return e?e.textContent.trim():""};
+  var inf=d.getElementsByTagNameNS("*","infNFe")[0];if(!inf)return null;
+  var chave=(inf.getAttribute("Id")||"").replace(/\D/g,"");if(chave.length!==44)return null;
+  var dest=inf.getElementsByTagNameNS("*","dest")[0];
+  var m=tag(inf,"infCpl").match(/Pedido Loja:\s*(\S+)/i);
+  var itens=Array.prototype.map.call(inf.getElementsByTagNameNS("*","det"),function(det){
+    return{sku:tag(det,"cProd"),nome_na_nota:tag(det,"xProd"),quantidade:parseFloat(tag(det,"qCom"))||1}
+  });
+  return{nota:{chave:chave,numero:tag(inf,"nNF"),serie:tag(inf,"serie"),comprador_nome:tag(dest,"xNome"),cidade:tag(dest,"xMun"),uf:tag(dest,"UF"),pedido_loja:m?m[1]:null,codigos:codigosDe(inf,chave,m?m[1]:"")},itens:itens};
+}
+$("btnImp").onclick=async function(){
+  var out=$("impMsg"),files=$("arq").files;
+  if(!files.length){out.textContent="Escolha um ZIP ou XML primeiro.";return}
+  out.textContent="Lendo arquivos...";
+  try{
+    var xmls=await lerArquivos(files),lista=xmls.map(parseNota).filter(Boolean);
+    var mapa=new Map(lista.map(function(x){return[x.nota.chave,x]})),chaves=Array.from(mapa.keys()),exist=new Set();
+    for(var i=0;i<chaves.length;i+=100){
+      var r=await SB.from("notas").select("chave").in("chave",chaves.slice(i,i+100));
+      if(r.error)throw r.error;r.data.forEach(function(x){exist.add(x.chave)});
+    }
+    var novas=chaves.filter(function(c){return!exist.has(c)}).map(function(c){return mapa.get(c)});
+    for(var j=0;j<novas.length;j+=100){
+      out.textContent="Salvando "+Math.min(j+100,novas.length)+" de "+novas.length+"...";
+      var lote=novas.slice(j,j+100);
+      var a=await SB.from("notas").insert(lote.map(function(x){return x.nota}));if(a.error)throw a.error;
+      var its=[];lote.forEach(function(x){x.itens.forEach(function(it){its.push(Object.assign({nota_chave:x.nota.chave},it))})});
+      var b=await SB.from("nota_itens").insert(its);if(b.error)throw b.error;
+    }
+    var ruins=xmls.length-lista.length;
+    out.textContent=lista.length+" notas lidas: "+novas.length+" novas, "+exist.size+" já existiam."+(ruins?" "+ruins+" arquivo(s) sem nota válida.":"");
+  }catch(e){out.textContent="Erro: "+(e.message||e)}
+};
+
+/* ---------- Conferência ---------- */
+function info(it,p){
+  var nome=it.nome_na_nota||"",re=/([^\s:;]+):([^;]+)/g,m,attrs=[],first=-1;
+  while((m=re.exec(nome))){if(first<0)first=m.index;attrs.push([m[1],m[2].trim()])}
+  var titulo=(first>0?nome.slice(0,first):nome).trim(),mult=1;
+  var q=attrs.filter(function(a){return/^quantidade$/i.test(a[0])})[0];
+  if(q){var n=q[1].match(/\d+/);mult=n?parseInt(n[0],10):1}
+  if(p&&p.unidades_por_combo)mult=p.unidades_por_combo;
+  var vari=attrs.filter(function(a){return!/^quantidade$/i.test(a[0])}).map(function(a){return a[1]}).join(" · ");
+  if(p&&p.variacao)vari=p.variacao;
+  var qtd=Number(it.quantidade);
+  var desc=(qtd===1?"1 unidade":qtd+" unidades")+(mult>1?" do kit com "+mult:"");
+  return{nome:(p&&p.nome)||titulo,vari:vari,desc:desc,total:qtd*mult};
+}
+function candidatos(txt){
+  var s=String(txt||"").trim().toUpperCase(),c=new Set();
+  if(s)c.add(s);
+  s.split(/[^A-Z0-9]+/).forEach(function(t){if(t.length>=8)c.add(t)});
+  var m=s.replace(/\D/g,"").match(/\d{44}/);if(m)c.add(m[0]);
+  return Array.from(c);
+}
+$("msg").onclick=function(e){var k=e.target.dataset.k;if(!k||!window._opcoes)return;var n=window._opcoes.filter(function(x){return x.chave===k})[0];if(n){$("msg").innerHTML="";abrir(n)}};
+async function bipar(txt,silencioso){
+  txt=(txt||"").trim();if(!txt)return false;$("msg").innerHTML="";
+  var q=SB.from("notas").select("*");
+  q=/^\d{1,7}$/.test(txt)?q.eq("numero",txt.replace(/^0+/,"")):q.overlaps("codigos",candidatos(txt));
+  var r=await q.limit(10);
+  if(r.error){erro("msg","Erro ao buscar: "+r.error.message);return false}
+  if(!r.data.length){if(!silencioso)erro("msg","Não encontrei nenhuma nota com este código. Código lido: "+txt.slice(0,60)+". Tente outro código da etiqueta ou confira se a nota foi importada.");return false}
+  if(r.data.length>1){
+    var h='<div class="card"><p class="count">Este código bate com mais de uma nota. Escolha:</p>';
+    r.data.forEach(function(n){h+='<button class="tab" style="width:100%;margin-bottom:8px" data-k="'+esc(n.chave)+'">'+esc(n.comprador_nome)+" · Nota "+esc(n.numero)+"</button>"});
+    $("msg").innerHTML=h+"</div>";window._opcoes=r.data;return true;
+  }
+  await abrir(r.data[0]);return true;
+}
+async function abrir(nota){
+  var itens=(await SB.from("nota_itens").select("*").eq("nota_chave",nota.chave).order("id")).data||[];
+  var skus=Array.from(new Set(itens.map(function(i){return i.sku})));
+  var prods=(await SB.from("produtos").select("*").in("sku",skus)).data||[],pm={};
+  prods.forEach(function(p){pm[p.sku]=p});
+  await SB.from("conferencias").upsert({nota_chave:nota.chave,conferente_id:user.id},{onConflict:"nota_chave",ignoreDuplicates:true});
+  var conf=(await SB.from("conferencias").select("status").eq("nota_chave",nota.chave).maybeSingle()).data;
+  var fe=(await SB.from("conferencia_itens").select("nota_item_id").in("nota_item_id",itens.map(function(i){return i.id}))).data||[];
+  atual={nota:nota,itens:itens,pm:pm,feitos:new Set(fe.map(function(f){return f.nota_item_id})),ja:!!conf&&conf.status==="concluida"};
+  $("scan").hidden=true;mostrar();
+}
+function mostrar(){
+  var a=atual,n=a.nota,h='<div class="card"><div class="buyer">'+esc(n.comprador_nome)+'</div><div class="meta">'+esc(n.cidade)+" - "+esc(n.uf)+" · Nota "+esc(n.numero)+"</div></div>";
+  if(a.ja)h+='<div class="err" style="margin:0 0 12px">Este pedido já foi conferido antes.</div>';
+  h+='<p class="count">'+a.feitos.size+" de "+a.itens.length+(a.itens.length===1?" produto conferido":" produtos conferidos")+"</p>";
+  a.itens.forEach(function(it){
+    var p=a.pm[it.sku],f=info(it,p),d=a.feitos.has(it.id);
+    var foto=p&&p.foto_url?'<img class="ph" src="'+esc(p.foto_url)+'" alt="">':'<div class="ph">'+esc(it.sku)+"</div>";
+    h+='<div class="card item'+(d?" done":"")+'">'+foto+'<div style="flex:1">'+(f.vari?'<div class="vt">'+esc(f.vari)+"</div>":"")+'<div class="name">'+esc(f.nome)+" · SKU "+esc(it.sku)+'</div><div class="what">'+esc(f.desc)+'</div><div class="total">'+f.total+'<small>produtos a separar</small></div><button class="ok" data-i="'+it.id+'">'+(d?"✓ Conferido":"Conferido")+"</button></div></div>";
+  });
+  $("order").innerHTML=h;$("order").hidden=false;$("next").disabled=a.feitos.size<a.itens.length;
+}
+$("order").onclick=async function(e){
+  var id=e.target.dataset.i;if(!id||!atual)return;
+  var n=Number(id),a=atual;e.target.disabled=true;
+  var r=a.feitos.has(n)?await SB.from("conferencia_itens").delete().eq("nota_item_id",n):await SB.from("conferencia_itens").upsert({nota_item_id:n,conferente_id:user.id});
+  if(r.error){mostrar();erro("msg","Não consegui salvar: "+r.error.message);return}
+  if(a.feitos.has(n))a.feitos.delete(n);else a.feitos.add(n);
+  var ok=a.feitos.size===a.itens.length;a.ja=false;
+  await SB.from("conferencias").update({status:ok?"concluida":"em_andamento",concluido_em:ok?new Date().toISOString():null}).eq("nota_chave",a.nota.chave);
+  mostrar();
+};
+$("next").onclick=function(){atual=null;$("order").hidden=true;$("scan").hidden=false;$("next").disabled=true;$("msg").innerHTML="";$("code").value="";$("code").focus()};
+$("code").addEventListener("input",function(e){var v=e.target.value.replace(/\D/g,"");if(v.length>=44){bipar(v);e.target.value=""}});
+$("code").addEventListener("keydown",function(e){if(e.key==="Enter"){bipar(e.target.value);e.target.value=""}});
+
+/* ---------- Câmera ---------- */
+$("btnCam").onclick=async function(){
+  if(!("BarcodeDetector" in window)){erro("msg","Este navegador não lê código de barras pela câmera. Use o Chrome no Android ou um leitor Bluetooth.");return}
+  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})}
+  catch(e){erro("msg","Não consegui abrir a câmera ("+(e&&e.name?e.name:"erro")+"). Permita o acesso à câmera nas configurações do navegador e abra o app direto no Chrome.");return}
+  var v=$("video");v.srcObject=stream;await v.play();$("cam").hidden=false;rodando=true;tentados=new Set();
+  var sup=await BarcodeDetector.getSupportedFormats();
+  var fm=["code_128","itf","code_39","ean_13","qr_code","data_matrix","pdf417"].filter(function(f){return sup.indexOf(f)>=0});
+  var det=new BarcodeDetector({formats:fm});
+  var loop=async function(){
+    if(!rodando)return;
+    try{
+      var r=await det.detect(v);
+      for(var i=0;i<r.length;i++){
+        var raw=(r[i].rawValue||"").trim();
+        if(!raw||tentados.has(raw))continue;
+        tentados.add(raw);
+        if(await bipar(raw,true)){fechar();return}
+      }
+    }catch(e){}
+    setTimeout(loop,250);
+  };
+  loop();
+};
+function fechar(){rodando=false;if(stream)stream.getTracks().forEach(function(t){t.stop()});$("cam").hidden=true}
+$("fechaCam").onclick=function(){
+  fechar();
+  if(tentados.size)erro("msg","Códigos lidos, mas sem nota correspondente: "+Array.from(tentados).map(function(s){return s.slice(0,40)}).join(" | "));
+};
+
+iniciar();
+</script>
+</body>
+</html>
